@@ -1,0 +1,57 @@
+FROM php:8.2-fpm-alpine
+
+# Set working directory
+WORKDIR /var/www
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    mysql-client \
+    supervisor \
+    nginx
+
+# Clear cache
+RUN rm -rf /var/cache/apk/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml
+
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
+
+# Install Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Copy application files
+COPY . /var/www
+COPY docker/nginx/nginx.prod.conf /etc/nginx/nginx.conf
+COPY docker/php/php.prod.ini /usr/local/etc/php/conf.d/local.ini
+COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
+
+# Install dependencies
+RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
+
+# Install Node.js and build assets
+RUN apk add --no-cache nodejs npm
+RUN npm install && npm run build && rm -rf node_modules
+
+# Generate application key and optimize
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# Expose port
+EXPOSE 80
+
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"] 
