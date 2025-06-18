@@ -23,7 +23,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel
+          MYSQL_DATABASE: laravel_test
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -62,21 +62,41 @@ jobs:
       run: |
         cp .env.example .env
         php artisan key:generate
-        php artisan config:cache
+    
+    - name: Configure test database
+      run: |
+        echo "DB_CONNECTION=mysql" >> .env
+        echo "DB_HOST=127.0.0.1" >> .env
+        echo "DB_PORT=3306" >> .env
+        echo "DB_DATABASE=laravel_test" >> .env
+        echo "DB_USERNAME=root" >> .env
+        echo "DB_PASSWORD=password" >> .env
+        echo "CACHE_DRIVER=redis" >> .env
+        echo "SESSION_DRIVER=redis" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
+        echo "REDIS_HOST=127.0.0.1" >> .env
+        echo "REDIS_PORT=6379" >> .env
+        php artisan config:clear
+        cat .env
+    
+    - name: Wait for services
+      run: |
+        echo "Waiting for MySQL..."
+        while ! mysqladmin ping -h"127.0.0.1" -P"3306" -u"root" -p"password" --silent; do
+          sleep 2
+        done
+        echo "MySQL is ready!"
+        
+        echo "Waiting for Redis..."
+        while ! redis-cli -h 127.0.0.1 -p 6379 ping; do
+          sleep 2
+        done
+        echo "Redis is ready!"
     
     - name: Run tests
       run: |
         php artisan migrate --force
         php artisan test
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_DATABASE: laravel
-        DB_USERNAME: root
-        DB_PASSWORD: password
-        REDIS_HOST: 127.0.0.1
-        REDIS_PORT: 6379
 
 
   deploy:
