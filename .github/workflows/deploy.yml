@@ -23,7 +23,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel_test
+          MYSQL_DATABASE: laravel
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -65,18 +65,19 @@ jobs:
         php artisan config:cache
     
     - name: Run tests
+      run: |
+        php artisan migrate --force
+        php artisan test
       env:
         DB_CONNECTION: mysql
         DB_HOST: 127.0.0.1
         DB_PORT: 3306
-        DB_DATABASE: laravel_test
+        DB_DATABASE: laravel
         DB_USERNAME: root
         DB_PASSWORD: password
         REDIS_HOST: 127.0.0.1
         REDIS_PORT: 6379
-      run: |
-        php artisan migrate --force
-        php artisan test
+
 
   deploy:
     name: Deploy to ECS
