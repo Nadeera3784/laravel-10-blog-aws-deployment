@@ -3,7 +3,7 @@ FROM php:8.2-fpm-alpine
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies
+# Install system dependencies and dev packages
 RUN apk add --no-cache \
     git \
     curl \
@@ -13,16 +13,31 @@ RUN apk add --no-cache \
     unzip \
     mysql-client \
     supervisor \
-    nginx
+    nginx \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    zlib-dev \
+    libxpm-dev \
+    oniguruma-dev
 
-# Clear cache
-RUN rm -rf /var/cache/apk/*
+# Configure GD extension
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml
 
+# Clear cache
+RUN rm -rf /var/cache/apk/*
+
 # Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
