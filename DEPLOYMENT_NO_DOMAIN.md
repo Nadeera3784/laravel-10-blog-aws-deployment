@@ -1,4 +1,4 @@
-# Deploy Laravel Blog on AWS (No Domain Required)
+# Deploy Laravel Blog on AWS without a domain 
 
 Yes, you can absolutely deploy your Laravel blog on AWS **without owning a domain**! AWS will provide you with a URL to access your application.
 
@@ -159,29 +159,6 @@ git commit -m "Deploy to AWS"
 git push origin main
 ```
 
-## 🔄 Adding a Domain Later (Optional)
-
-If you get a domain later, you can easily add it:
-
-1. **Purchase a domain** (Route 53, GoDaddy, etc.)
-2. **Create ACM certificate** for HTTPS
-3. **Update ALB listener** to use HTTPS
-4. **Point domain** to your ALB
-5. **Update APP_URL** in task definition
-
-## 💰 Cost (Without Domain)
-
-**Monthly AWS costs (us-east-1):**
-- ECS Fargate: ~$15
-- RDS MySQL: ~$15
-- ElastiCache Redis: ~$15
-- Application Load Balancer: ~$20
-- **Total: ~$65/month**
-
-**No additional costs for:**
-- Domain registration
-- SSL certificates (for now)
-- DNS hosting
 
 ## 🚀 Live Example
 
@@ -202,12 +179,3 @@ Password: password
 http://laravel-blog-alb-1234567890.us-east-1.elb.amazonaws.com/blog
 ```
 
-## ✨ Ready to Deploy?
-
-You can start deploying right now! The AWS-provided URL works perfectly for:
-- ✅ Testing your application
-- ✅ Sharing with friends/clients
-- ✅ Development and staging
-- ✅ Production use (if you don't mind the long URL)
-
-Your Laravel blog will be **fully functional and professional** even without a custom domain! 

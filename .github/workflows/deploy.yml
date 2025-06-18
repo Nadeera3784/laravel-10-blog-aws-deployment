@@ -31,17 +31,7 @@ jobs:
           --health-retries=3
         ports:
           - 3306:3306
-      
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    
+        
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -71,11 +61,6 @@ jobs:
         echo "DB_DATABASE=laravel_test" >> .env
         echo "DB_USERNAME=root" >> .env
         echo "DB_PASSWORD=password" >> .env
-        echo "CACHE_DRIVER=redis" >> .env
-        echo "SESSION_DRIVER=redis" >> .env
-        echo "QUEUE_CONNECTION=sync" >> .env
-        echo "REDIS_HOST=127.0.0.1" >> .env
-        echo "REDIS_PORT=6379" >> .env
         php artisan config:clear
         cat .env
     
@@ -86,13 +71,7 @@ jobs:
           sleep 2
         done
         echo "MySQL is ready!"
-        
-        echo "Waiting for Redis..."
-        while ! redis-cli -h 127.0.0.1 -p 6379 ping; do
-          sleep 2
-        done
-        echo "Redis is ready!"
-    
+            
     - name: Run tests
       run: |
         php artisan migrate --force

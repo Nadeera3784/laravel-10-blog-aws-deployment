@@ -1,23 +1,5 @@
 # Laravel Blog AWS Deployment Guide
 
-This guide will help you deploy your Laravel blog application to AWS using GitHub Actions CI/CD pipeline.
-
-## 🏗️ Architecture Overview
-
-- **AWS ECS Fargate**: Container orchestration for running the Laravel application
-- **AWS RDS MySQL**: Managed database service
-- **AWS ElastiCache Redis**: Caching and session storage
-- **AWS S3**: File storage (already configured)
-- **Application Load Balancer**: Traffic distribution and SSL termination
-- **AWS ECR**: Container registry for Docker images
-- **GitHub Actions**: CI/CD pipeline
-
-## 📋 Prerequisites
-
-1. AWS Account with appropriate permissions
-2. GitHub repository with your Laravel application
-3. Domain name (optional, but recommended)
-4. AWS CLI installed locally
 
 ## 🚀 Step-by-Step Deployment
 
@@ -239,71 +221,6 @@ View application logs:
 aws logs tail /ecs/laravel-blog --follow
 ```
 
-### Health Checks
-- Application Load Balancer performs health checks on `/`
-- ECS tasks have health checks configured
-- CloudWatch alarms can be set up for monitoring
-
-## 💰 Cost Optimization
-
-### Estimated Monthly Costs (us-east-1):
-- **ECS Fargate (0.5 vCPU, 1GB)**: ~$15
-- **RDS MySQL (db.t3.micro)**: ~$15
-- **ElastiCache Redis (cache.t3.micro)**: ~$15
-- **Application Load Balancer**: ~$20
-- **Data Transfer**: Variable
-- **Total**: ~$65-80/month
-
-### Cost Optimization Tips:
-1. Use Spot instances for non-production
-2. Schedule stop/start for development environments
-3. Use Reserved Instances for production workloads
-4. Implement auto-scaling based on CPU/memory usage
-
-## 🔒 Security Best Practices
-
-1. **Secrets Management**: Use AWS Systems Manager Parameter Store
-2. **Network Security**: Private subnets for database and cache
-3. **IAM Roles**: Least privilege access
-4. **SSL/TLS**: Use ACM certificates
-5. **Security Groups**: Restrict access to necessary ports only
-6. **Image Scanning**: ECR automatically scans images for vulnerabilities
-
-## 🔄 Alternative Deployment Options
-
-### 1. AWS App Runner (Simpler, Higher Cost)
-- Easier to set up and manage
-- Automatic scaling and load balancing
-- Higher cost (~$100-150/month)
-
-### 2. AWS Elastic Beanstalk
-- Platform-as-a-Service approach
-- Good for traditional applications
-- Less container-native
-
-### 3. AWS Lambda + API Gateway (Serverless)
-- Pay per request
-- Complex for full Laravel applications
-- Good for APIs only
-
-## 🚨 Troubleshooting
-
-### Common Issues:
-
-1. **ECS Task Fails to Start**
-   - Check CloudWatch logs
-   - Verify environment variables
-   - Check IAM permissions
-
-2. **Database Connection Issues**
-   - Verify security groups
-   - Check RDS endpoint
-   - Validate credentials
-
-3. **File Upload Issues**
-   - Verify S3 bucket permissions
-   - Check IAM role for ECS tasks
-
 ### Useful Commands:
 
 ```bash
@@ -319,13 +236,3 @@ aws elbv2 describe-target-health --target-group-arn YOUR_TARGET_GROUP_ARN
 # View CloudFormation stack status
 aws cloudformation describe-stacks --stack-name laravel-blog-infrastructure
 ```
-
-## 📞 Support
-
-For issues with this deployment:
-1. Check CloudWatch logs first
-2. Verify all AWS resources are properly configured
-3. Ensure GitHub secrets are correctly set
-4. Review the task definition for correct values
-
-This deployment provides a production-ready, scalable, and secure environment for your Laravel blog application on AWS. 
