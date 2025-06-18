@@ -121,9 +121,6 @@ If you ran the seeder:
 - **Email**: admin@blog.com
 - **Password**: password
 
-## Testing
-
-The application includes comprehensive tests following the clean architecture:
 
 ### Run Tests
 ```bash
