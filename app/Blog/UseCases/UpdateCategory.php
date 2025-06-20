@@ -21,4 +21,4 @@ class UpdateCategory
             throw new CategoryCreationException('Failed to update category: ' . $e->getMessage());
         }
     }
-} 
+}
