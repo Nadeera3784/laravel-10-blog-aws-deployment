@@ -5,6 +5,30 @@
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-4">Blog Posts</h1>
         
+        <!-- Search Form -->
+        <div class="mb-6">
+            <form method="GET" action="{{ route('blog.index') }}" class="flex gap-2">
+                <div class="flex-1">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Search posts..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <input type="hidden" name="category" value="{{ request('category') }}">
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Search
+                </button>
+                @if(request('search') || request('category'))
+                    <a href="{{ route('blog.index') }}" 
+                       class="px-6 py-2 bg-gray-500 text-white font-medium rounded-md hover:bg-gray-600 focus:outline-none">
+                        Clear
+                    </a>
+                @endif
+            </form>
+        </div>
+        
         <!-- Category Filter -->
         <div class="flex flex-wrap gap-2 mb-6">
             <a href="{{ route('blog.index') }}" 
@@ -25,8 +49,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @foreach($posts as $post)
                 <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    @if($post->image)
-                        <img src="{{ $post->getImageUrl() }}" alt="{{ $post->name }}" class="w-full h-48 object-cover">
+                    @if($post->image_url)
+                        <img src="{{ $post->image_url }}" alt="{{ $post->name }}" class="w-full h-48 object-cover">
                     @else
                         <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                             <span class="text-gray-400">No Image</span>

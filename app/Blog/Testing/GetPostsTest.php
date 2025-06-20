@@ -28,7 +28,6 @@ class GetPostsTest extends TestCase
         $this->category2 = Category::create(['name' => 'Category 2', 'slug' => 'category-2']);
     }
 
-    /** @test */
     public function it_can_get_all_posts()
     {
         Post::create([
@@ -54,7 +53,6 @@ class GetPostsTest extends TestCase
         $this->assertEquals(2, $posts->total());
     }
 
-    /** @test */
     public function it_can_filter_published_posts_only()
     {
         Post::create([
@@ -81,7 +79,6 @@ class GetPostsTest extends TestCase
         $this->assertEquals('Published Post', $posts->first()->name);
     }
 
-    /** @test */
     public function it_can_filter_posts_by_category()
     {
         Post::create([
@@ -108,7 +105,6 @@ class GetPostsTest extends TestCase
         $this->assertEquals('Post in Category 1', $posts->first()->name);
     }
 
-    /** @test */
     public function it_orders_posts_by_created_date_descending()
     {
         $olderPost = Post::create([

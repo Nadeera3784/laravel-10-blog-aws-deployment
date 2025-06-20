@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Blog\IO\Http;
+namespace App\Blog\IO\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Blog\UseCases\GetPosts;

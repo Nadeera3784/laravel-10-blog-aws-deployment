@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Blog\IO\Http\BlogController;
-use App\Blog\IO\Http\PostController;
-use App\Blog\IO\Http\CategoryController;
+use App\Blog\IO\Http\Controllers\BlogController;
+use App\Blog\IO\Http\Controllers\PostController;
+use App\Blog\IO\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,12 +17,10 @@ use App\Blog\IO\Http\CategoryController;
 |
 */
 
-// Public blog routes
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.home');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
-// Authentication routes
 Auth::routes();
 
 // Admin routes (protected by auth middleware)
@@ -35,9 +33,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('posts', PostController::class);
 
     // Category management
-    Route::resource('categories', CategoryController::class)->except(['show', 'edit', 'update']);
+    Route::resource('categories', CategoryController::class)->except(['show']);
 });
 
-Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

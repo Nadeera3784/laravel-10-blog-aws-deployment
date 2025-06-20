@@ -33,7 +33,6 @@ class CreatePostTest extends TestCase
         Auth::login($this->user);
     }
 
-    /** @test */
     public function it_can_create_a_post_with_valid_data()
     {
         $data = [
@@ -58,7 +57,6 @@ class CreatePostTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function it_creates_a_draft_post_by_default()
     {
         $data = [
@@ -72,7 +70,6 @@ class CreatePostTest extends TestCase
         $this->assertFalse($post->is_published);
     }
 
-    /** @test */
     public function it_generates_slug_automatically()
     {
         $data = [
@@ -86,7 +83,6 @@ class CreatePostTest extends TestCase
         $this->assertEquals('a-post-with-spaces-and-special-characters', $post->slug);
     }
 
-    /** @test */
     public function it_throws_exception_on_creation_failure()
     {
         $this->expectException(PostCreationException::class);

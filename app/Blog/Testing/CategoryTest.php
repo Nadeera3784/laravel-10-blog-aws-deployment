@@ -25,7 +25,6 @@ class CategoryTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function it_can_get_post_count()
     {
         Post::create([
@@ -49,13 +48,11 @@ class CategoryTest extends TestCase
         $this->assertEquals(2, $this->category->getPostCount());
     }
 
-    /** @test */
     public function it_returns_zero_when_no_posts()
     {
         $this->assertEquals(0, $this->category->getPostCount());
     }
 
-    /** @test */
     public function it_can_check_if_has_published_posts()
     {
         Post::create([
@@ -70,7 +67,6 @@ class CategoryTest extends TestCase
         $this->assertTrue($this->category->hasPublishedPosts());
     }
 
-    /** @test */
     public function it_returns_false_when_no_published_posts()
     {
         Post::create([
@@ -85,13 +81,11 @@ class CategoryTest extends TestCase
         $this->assertFalse($this->category->hasPublishedPosts());
     }
 
-    /** @test */
     public function it_returns_false_when_no_posts_at_all()
     {
         $this->assertFalse($this->category->hasPublishedPosts());
     }
 
-    /** @test */
     public function it_has_posts_relationship()
     {
         Post::create([
@@ -107,7 +101,6 @@ class CategoryTest extends TestCase
         $this->assertEquals('Related Post', $this->category->posts->first()->name);
     }
 
-    /** @test */
     public function it_can_scope_categories_with_posts()
     {
         $emptyCategory = Category::create([
@@ -130,7 +123,6 @@ class CategoryTest extends TestCase
         $this->assertEquals($this->category->id, $categoriesWithPosts->first()->id);
     }
 
-    /** @test */
     public function it_can_scope_categories_with_published_posts()
     {
         $categoryWithDraft = Category::create([
@@ -162,7 +154,6 @@ class CategoryTest extends TestCase
         $this->assertEquals($this->category->id, $categoriesWithPublishedPosts->first()->id);
     }
 
-    /** @test */
     public function it_has_correct_fillable_attributes()
     {
         $category = new Category([
@@ -174,7 +165,6 @@ class CategoryTest extends TestCase
         $this->assertEquals('test-category', $category->slug);
     }
 
-    /** @test */
     public function it_can_be_created_with_factory()
     {
         $category = Category::create([
@@ -188,4 +178,4 @@ class CategoryTest extends TestCase
             'slug' => 'factory-category'
         ]);
     }
-} 
+}

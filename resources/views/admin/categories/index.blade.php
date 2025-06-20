@@ -40,7 +40,11 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="ml-4 flex-shrink-0">
+                                <div class="ml-4 flex-shrink-0 flex space-x-4">
+                                    <a href="{{ route('admin.categories.edit', $category->id) }}" 
+                                       class="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                        Edit
+                                    </a>
                                     <form method="POST" action="{{ route('admin.categories.destroy', $category->id) }}" 
                                           class="inline" 
                                           onsubmit="return confirm('Are you sure you want to delete this category? This action cannot be undone.')">

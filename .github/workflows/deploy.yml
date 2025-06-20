@@ -53,6 +53,9 @@ jobs:
         cp .env.example .env
         php artisan key:generate
     
+    - name: Run Pint (Code Style Check)
+      run: ./vendor/bin/pint --preset psr12 --test
+    
     - name: Configure test database
       run: |
         echo "DB_CONNECTION=mysql" >> .env

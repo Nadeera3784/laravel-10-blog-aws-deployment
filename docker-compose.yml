@@ -10,6 +10,8 @@ volumes:
     name: laravel_mysql-data
   redis-data:
     name: laravel_redis-data
+  elasticsearch-data:
+    name: laravel_elasticsearch-data
 
 services:
  
@@ -100,3 +102,31 @@ services:
       - "8100:8025"
     networks:
       - laravel-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms750m -Xmx750m
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - elasticsearch-data:/data
+    networks:
+      - laravel-network
+  
+  kibana:
+    image: kibana:7.17.3
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_CLOUD}
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD}
+    ports:
+      - 5601:5601
+    networks:
+      - laravel-network
+    links: ['elasticsearch']
+    depends_on: ['elasticsearch']

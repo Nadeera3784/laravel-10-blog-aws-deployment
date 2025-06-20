@@ -20,7 +20,6 @@ class CreateCategoryTest extends TestCase
         $this->createCategory = new CreateCategory;
     }
 
-    /** @test */
     public function it_can_create_a_category_with_valid_data()
     {
         $data = [
@@ -38,7 +37,6 @@ class CreateCategoryTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function it_generates_slug_automatically_from_name()
     {
         $data = [
@@ -50,7 +48,6 @@ class CreateCategoryTest extends TestCase
         $this->assertEquals('web-development-design', $category->slug);
     }
 
-    /** @test */
     public function it_handles_special_characters_in_name()
     {
         $data = [
@@ -63,7 +60,6 @@ class CreateCategoryTest extends TestCase
         $this->assertEquals('sports-entertainment', $category->slug);
     }
 
-    /** @test */
     public function it_handles_long_category_names()
     {
         $data = [
@@ -76,7 +72,6 @@ class CreateCategoryTest extends TestCase
         $this->assertEquals('this-is-a-very-long-category-name-that-should-still-work-properly', $category->slug);
     }
 
-    /** @test */
     public function it_throws_exception_when_category_creation_fails()
     {
         $this->expectException(CategoryCreationException::class);
@@ -88,4 +83,4 @@ class CreateCategoryTest extends TestCase
 
         $this->createCategory->execute($data);
     }
-} 
+}
