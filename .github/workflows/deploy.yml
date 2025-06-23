@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: laravel-blog
+  ECR_REPOSITORY: laravel-blog-app
   ECS_SERVICE: laravel-blog-service
   ECS_CLUSTER: laravel-blog-cluster
   ECS_TASK_DEFINITION: laravel-blog-task
