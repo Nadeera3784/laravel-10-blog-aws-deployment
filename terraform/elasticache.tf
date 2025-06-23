@@ -41,6 +41,8 @@ resource "aws_elasticache_replication_group" "main" {
   
   at_rest_encryption_enabled  = true
   transit_encryption_enabled  = true
+  transit_encryption_mode     = "preferred"
+  apply_immediately           = true
   
   snapshot_retention_limit    = 5
   snapshot_window            = "03:00-05:00"

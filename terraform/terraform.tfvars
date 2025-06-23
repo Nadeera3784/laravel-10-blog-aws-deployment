@@ -13,8 +13,8 @@ app_memory = 1024
 app_count  = 2
 
 # Laravel Application Configuration
-app_env   = "Production"
-app_debug = "false"
+app_env   = "production"
+app_debug = "true"
 app_key   = "base64:GDGVQ4JRzZLhrDILXUsvX/EGcy4gip8jdnP0fhrt/Js="
 
 # Database Configuration

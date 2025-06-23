@@ -49,6 +49,31 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Add S3 access policy for the task role
+resource "aws_iam_role_policy" "ecs_task_s3_policy" {
+  name = "${var.project_name}-ecs-task-s3-policy"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.app_storage.arn,
+          "${aws_s3_bucket.app_storage.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # ECS Task Role
 resource "aws_iam_role" "ecs_task_role" {
   name = "${var.project_name}-ecs-task-role"
@@ -90,7 +115,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name  = "laravel-app"
-      image = "${aws_ecr_repository.app.repository_url}:fixed-1750662311"
+      image = "${aws_ecr_repository.app.repository_url}:working-1750672452"
       
       portMappings = [
         {
@@ -119,7 +144,7 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "DB_HOST"
-          value = aws_db_instance.main.endpoint
+          value = split(":", aws_db_instance.main.endpoint)[0]
         },
         {
           name  = "DB_PORT"
@@ -146,6 +171,14 @@ resource "aws_ecs_task_definition" "app" {
           value = "6379"
         },
         {
+          name  = "REDIS_PASSWORD"
+          value = ""
+        },
+        {
+          name  = "REDIS_SCHEME"
+          value = "tcp"
+        },
+        {
           name  = "ELASTICSEARCH_HOST"
           value = "https://${aws_opensearch_domain.main.endpoint}"
         },
@@ -168,6 +201,26 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "AWS_USE_PATH_STYLE_ENDPOINT"
           value = "false"
+        },
+        {
+          name  = "CACHE_DRIVER"
+          value = "redis"
+        },
+        {
+          name  = "SESSION_DRIVER"
+          value = "redis"
+        },
+        {
+          name  = "LOG_CHANNEL"
+          value = "stderr"
+        },
+        {
+          name  = "ELASTICSEARCH_USERNAME"
+          value = var.opensearch_master_user
+        },
+        {
+          name  = "ELASTICSEARCH_PASSWORD"
+          value = var.opensearch_master_password
         }
       ]
 
