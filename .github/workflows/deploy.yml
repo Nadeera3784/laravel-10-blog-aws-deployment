@@ -7,12 +7,11 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: laravel-blog-app
-  ECS_SERVICE: laravel-blog-service
-  ECS_CLUSTER: laravel-blog-cluster
-  ECS_TASK_DEFINITION: laravel-blog-task
-  CONTAINER_NAME: laravel-app
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
 
 jobs:
   test:
@@ -108,7 +107,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build Docker image for production
-        docker build -f docker/php/Dockerfile.prod -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build --platform linux/amd64 -f docker/php/Dockerfile.prod -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 

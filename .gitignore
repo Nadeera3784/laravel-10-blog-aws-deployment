@@ -94,3 +94,9 @@ composer.phar
 .phpunit.result.cache 
 
 .terraform
+
+terraform.tfvars
+tfplan
+.terraform.lock.hcl
+
+.phpunit.result.cache

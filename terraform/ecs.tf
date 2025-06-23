@@ -115,7 +115,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name  = "laravel-app"
-      image = "${aws_ecr_repository.app.repository_url}:working-1750672452"
+      image = "${aws_ecr_repository.app.repository_url}:latest"
       
       portMappings = [
         {

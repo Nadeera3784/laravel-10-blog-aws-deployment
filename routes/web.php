@@ -4,44 +4,14 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Blog\IO\Http\Controllers\PostController;
 use App\Blog\IO\Http\Controllers\CategoryController;
+use App\Blog\IO\Http\Controllers\BlogController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-Route::get('/health', function () {
-    return response()->json(['status' => 'ok', 'timestamp' => now()]);
-});
-
-Route::get('/', function () {
-    return response()->json([
-        'message' => 'Laravel Blog Application is running!',
-        'status' => 'success',
-        'timestamp' => now(),
-        'environment' => config('app.env'),
-        'debug' => config('app.debug')
-    ]);
-})->name('home');
-
-// Simple blog routes without complex controllers for now
-Route::get('/blog', function () {
-    return response()->json([
-        'message' => 'Blog section - Coming soon!',
-        'status' => 'success',
-        'timestamp' => now()
-    ]);
-})->name('blog.index');
+Route::get('/', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.home');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Auth::routes();
 
-// Admin routes (protected by auth middleware)
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return response()->json([
@@ -51,11 +21,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ]);
     })->name('dashboard');
 
-    // Post management
     Route::resource('posts', PostController::class);
-
-    // Category management
     Route::resource('categories', CategoryController::class)->except(['show']);
 });
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home.controller');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+});

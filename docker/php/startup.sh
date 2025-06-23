@@ -47,3 +47,30 @@ if [ -f artisan ]; then
   echo "Finished environment initialization"
 
 fi
+
+echo "Starting Laravel application..."
+
+# Wait for database to be ready and run migrations
+echo "Waiting for database connection..."
+until php artisan migrate:status --env=production > /dev/null 2>&1; do
+    echo "Database not ready yet, waiting 5 seconds..."
+    sleep 5
+done
+
+echo "Database connection established!"
+
+# Run database migrations
+echo "Running database migrations..."
+php artisan migrate --force --env=production
+
+# Check if migrations were successful
+if [ $? -eq 0 ]; then
+    echo "✅ Database migrations completed successfully!"
+else
+    echo "❌ Database migrations failed!"
+    exit 1
+fi
+
+# Start supervisord
+echo "Starting supervisord..."
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
