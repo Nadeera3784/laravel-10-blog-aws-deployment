@@ -145,4 +145,143 @@ output "project_name" {
 output "aws_region" {
   description = "AWS region where resources are deployed"
   value       = var.aws_region
+}
+
+# Generate task definition JSON for GitHub Actions
+resource "local_file" "task_definition" {
+  content = jsonencode({
+    family                   = aws_ecs_task_definition.app.family
+    networkMode             = "awsvpc"
+    requiresCompatibilities = ["FARGATE"]
+    cpu                     = tostring(aws_ecs_task_definition.app.cpu)
+    memory                  = tostring(aws_ecs_task_definition.app.memory)
+    executionRoleArn        = aws_ecs_task_definition.app.execution_role_arn
+    taskRoleArn            = aws_ecs_task_definition.app.task_role_arn
+    containerDefinitions = [
+      {
+        name  = "laravel-app"
+        image = "${aws_ecr_repository.app.repository_url}:latest"
+        
+        portMappings = [
+          {
+            containerPort = 80
+            hostPort      = 80
+            protocol      = "tcp"
+          }
+        ]
+
+        environment = [
+          {
+            name  = "APP_ENV"
+            value = var.app_env
+          },
+          {
+            name  = "APP_DEBUG"
+            value = var.app_debug
+          },
+          {
+            name  = "APP_KEY"
+            value = var.app_key
+          },
+          {
+            name  = "DB_CONNECTION"
+            value = "mysql"
+          },
+          {
+            name  = "DB_HOST"
+            value = split(":", aws_db_instance.main.endpoint)[0]
+          },
+          {
+            name  = "DB_PORT"
+            value = "3306"
+          },
+          {
+            name  = "DB_DATABASE"
+            value = var.db_name
+          },
+          {
+            name  = "DB_USERNAME"
+            value = var.db_username
+          },
+          {
+            name  = "DB_PASSWORD"
+            value = var.db_password
+          },
+          {
+            name  = "REDIS_HOST"
+            value = aws_elasticache_replication_group.main.primary_endpoint_address
+          },
+          {
+            name  = "REDIS_PORT"
+            value = "6379"
+          },
+          {
+            name  = "REDIS_PASSWORD"
+            value = ""
+          },
+          {
+            name  = "REDIS_SCHEME"
+            value = "tcp"
+          },
+          {
+            name  = "ELASTICSEARCH_HOST"
+            value = "https://${aws_opensearch_domain.main.endpoint}"
+          },
+          {
+            name  = "QUEUE_CONNECTION"
+            value = "redis"
+          },
+          {
+            name  = "FILESYSTEM_DISK"
+            value = "s3"
+          },
+          {
+            name  = "AWS_BUCKET"
+            value = aws_s3_bucket.app_storage.bucket
+          },
+          {
+            name  = "AWS_DEFAULT_REGION"
+            value = var.aws_region
+          },
+          {
+            name  = "AWS_USE_PATH_STYLE_ENDPOINT"
+            value = "false"
+          },
+          {
+            name  = "CACHE_DRIVER"
+            value = "redis"
+          },
+          {
+            name  = "SESSION_DRIVER"
+            value = "redis"
+          },
+          {
+            name  = "LOG_CHANNEL"
+            value = "stderr"
+          },
+          {
+            name  = "ELASTICSEARCH_USERNAME"
+            value = var.opensearch_master_user
+          },
+          {
+            name  = "ELASTICSEARCH_PASSWORD"
+            value = var.opensearch_master_password
+          }
+        ]
+
+        logConfiguration = {
+          logDriver = "awslogs"
+          options = {
+            "awslogs-group"         = aws_cloudwatch_log_group.app.name
+            "awslogs-region"        = var.aws_region
+            "awslogs-stream-prefix" = "ecs"
+          }
+        }
+
+        essential = true
+      }
+    ]
+  })
+  
+  filename = "../aws/task-definition.json"
 } 
