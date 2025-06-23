@@ -92,3 +92,5 @@ coverage/
 composer.phar
 
 .phpunit.result.cache 
+
+.terraform

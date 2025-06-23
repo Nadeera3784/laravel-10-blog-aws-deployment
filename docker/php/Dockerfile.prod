@@ -1,72 +1,167 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.1-fpm-alpine as php-base
 
-# Set working directory
-WORKDIR /var/www
+LABEL Description="Production PHP image with Nginx and PHP-FPM"
+LABEL Vendor="PHP"
+LABEL Version=1.0
 
-# Install system dependencies and dev packages
-RUN apk add --no-cache \
-    git \
-    curl \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    mysql-client \
-    supervisor \
-    nginx \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    zlib-dev \
-    libxpm-dev \
-    oniguruma-dev
+# Install system dependencies
+RUN apk add --update --no-cache \
+        bash \
+        curl \
+        shadow \
+        icu-libs \
+        libintl \
+        libzip \
+        aria2 \
+        gettext \
+        patch \
+        nginx \
+        supervisor
 
-# Configure GD extension
-RUN docker-php-ext-configure gd \
-    --with-freetype \
-    --with-jpeg \
-    --with-webp
+# Install runtime libraries for GD extension
+RUN apk add --update --no-cache \
+        freetype \
+        libjpeg-turbo \
+        libpng \
+        libwebp
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml
+# Install build dependencies
+RUN apk add --update --no-cache --virtual .docker-php-global-dependancies \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        gettext-dev \
+        gmp-dev \
+        icu-dev \
+        oniguruma-dev \
+        libxml2-dev \
+        ldb-dev \
+        libzip-dev \
+        autoconf \
+        g++ \
+        make \
+        pcre-dev \
+        wget
 
-# Clear cache
-RUN rm -rf /var/cache/apk/*
+# Install php extensions
+RUN php -m && \
+    docker-php-ext-configure bcmath --enable-bcmath && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
+    docker-php-ext-configure gettext && \
+    docker-php-ext-configure gmp && \
+    docker-php-ext-configure intl --enable-intl && \
+    docker-php-ext-configure mbstring --enable-mbstring && \
+    docker-php-ext-configure opcache --enable-opcache && \
+    docker-php-ext-configure pcntl --enable-pcntl && \
+    docker-php-ext-configure soap && \
+    docker-php-ext-configure zip && \
+    docker-php-ext-install bcmath \
+        gd \
+        gettext \
+        gmp \
+        intl \
+        mbstring \
+        opcache \
+        pcntl \
+        soap \
+        dom \
+        xml \
+        zip && \
+    php -m
 
-# Install Redis extension
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del .build-deps
+# Enable CURL
+RUN apk add --update --no-cache curl && \
+    apk add --update --no-cache --virtual .curl-build-deps curl-dev && \
+    docker-php-ext-install curl && \
+    apk del .curl-build-deps && \
+    php -m
 
-# Install Composer
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+# Enable MCRYPT
+RUN apk add --update --no-cache libmcrypt && \
+    apk add --update --no-cache --virtual .mcrypt-build-deps libmcrypt-dev && \
+    pecl install mcrypt && \
+    docker-php-ext-enable mcrypt && \
+    apk del .mcrypt-build-deps && \
+    php -m
+
+# Enable MySQL
+RUN apk add --update --no-cache --virtual .docker-php-mysql-dependancies \
+              mysql-client && \
+          docker-php-ext-configure mysqli && \
+          docker-php-ext-configure pdo_mysql && \
+          docker-php-ext-install mysqli \
+          pdo_mysql && \
+          apk del .docker-php-mysql-dependancies && \
+          php -m
+
+# Enable Redis
+RUN pecl install redis && \
+          docker-php-ext-enable redis && \
+          php -m
+
+# Enable composer
+RUN php -r "readfile('https://getcomposer.org/installer');" |  \
+    php -- --install-dir=/usr/bin/ --filename=composer
+
+# Clean up build dependencies
+RUN apk del .docker-php-global-dependancies && \
+    rm -rf /var/cache/apk/* && \
+    docker-php-source delete
+
+# Production build
+FROM php-base as php-production
+
+ARG LARAVEL_WORK_DIR='/var/www'
 
 # Copy application files
-COPY . /var/www
-COPY docker/nginx/nginx.prod.conf /etc/nginx/nginx.conf
-COPY docker/php/php.prod.ini /usr/local/etc/php/conf.d/local.ini
-COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
+COPY ./ /var/www/
+COPY ./docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+COPY ./docker/php/startup.sh /usr/local/bin/startup.sh
+
+# Copy Nginx configuration
+COPY ./docker/nginx/nginx.prod.conf /etc/nginx/http.d/default.conf
+
+# Copy supervisor configuration
+COPY ./docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Set working directory
+WORKDIR $LARAVEL_WORK_DIR
+
+# Install composer dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Publish vendor assets
+RUN php artisan vendor:publish --tag=public
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+RUN chown -R root:root $LARAVEL_WORK_DIR
+RUN rm -Rf /var/www/docker /root/.composer/
 
-# Install dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
+# Setup user and permissions
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data \
+    && mkdir -p /home/www-data/.composer/cache \
+    && mkdir -p /var/log/php \
+    && touch /var/log/php/php_error.log \
+    && touch /var/log/php/php-fpm-access.log \
+    && touch /var/log/php/php-fpm-error.log \
+    && touch /var/log/php/php-cli-error.log \
+    && find /var/log/php -type f -exec chmod 755 {} \; \
+    && chown -R www-data:www-data /home/www-data /var/www
 
-# Install Node.js and build assets
-RUN apk add --no-cache nodejs npm
-RUN npm install && npm run build && rm -rf node_modules
+# Create Laravel storage directories
+RUN mkdir -p ${LARAVEL_WORK_DIR}/storage/framework/sessions && \
+    mkdir -p ${LARAVEL_WORK_DIR}/storage/framework/views && \
+    mkdir -p ${LARAVEL_WORK_DIR}/storage/framework/cache && \
+    mkdir -p ${LARAVEL_WORK_DIR}/storage/key && \
+    mkdir -p ${LARAVEL_WORK_DIR}/storage/logs && \
+    chmod -R 777 ${LARAVEL_WORK_DIR}/storage && \
+    chmod -R 777 ${LARAVEL_WORK_DIR}/bootstrap
 
-# Generate application key and optimize
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Create nginx directories
+RUN mkdir -p /var/log/nginx && \
+    chown -R www-data:www-data /var/log/nginx
 
-# Expose port
 EXPOSE 80
 
-# Start supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"] 
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
