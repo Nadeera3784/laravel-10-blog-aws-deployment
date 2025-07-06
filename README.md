@@ -117,7 +117,7 @@ docker push $(terraform output -raw ecr_repository_url):latest
 aws ecs update-service --cluster laravel-blog-cluster --service laravel-blog-service --force-new-deployment --region us-east-1
 ```
 
-## 🔧 Running Database Migrations
+##  Running Database Migrations
 
 Here's something I learned the hard way - you need to run migrations separately. Create a new ECS task with the same task definition and override the command in Container overrides:
 
@@ -140,7 +140,7 @@ Here's something I learned the hard way - you need to run migrations separately.
 php artisan migrate 
 ```
 
-## 🤖 Setting Up CI/CD 
+## Setting Up CI/CD 
 
 I set up GitHub Actions to automatically deploy when I push code. Here's what you need to do:
 
@@ -167,7 +167,7 @@ Once you set this up, every time you push to the main branch:
 - ✅ Updates ECS service
 - ✅ Zero downtime deployment!
 
-## 🏗️ What Gets Created in AWS
+## What Gets Created in AWS
 
 When you run Terraform, here's what you'll get:
 
@@ -187,7 +187,7 @@ When you run Terraform, here's what you'll get:
 - Security groups that actually secure things
 - Encryption everywhere (RDS, Redis, Elasticsearch)
 
-## 🎨 What the Blog Can Do
+## What the Blog Can Do
 
 **For Users:**
 - Read blog posts with beautiful, responsive design
@@ -205,7 +205,7 @@ When you run Terraform, here's what you'll get:
 - Comprehensive error logging
 - Performance optimizations
 
-## 🐳 Docker Development
+## Docker Development
 
 Want to develop locally? I've got you covered:
 
