@@ -8,13 +8,13 @@ I created a production-ready Laravel blog application that runs on AWS with:
 
 - **Laravel 10** - My choice for the backend framework
 - **AWS ECS Fargate** - Because I wanted to learn containerized deployments
-- **RDS MySQL** - Managed database (no more server maintenance headaches!)
-- **ElastiCache Redis** - For caching and my background job queues
-- **Elasticsearch** - This was tricky but so worth it for advanced search
+- **RDS MySQL** - Managed database
+- **ElastiCache Redis** - For caching and background job queues
+- **Elasticsearch** - advanced search
 - **S3** - File storage made simple
 - **Application Load Balancer** - High availability was important to me
 - **ECR** - Container registry for my Docker images
-- **CloudWatch** - Monitoring everything (learned this the hard way!)
+- **CloudWatch** - Monitoring everything
 
 ## Features 
 
